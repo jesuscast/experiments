@@ -1,0 +1,1 @@
+SELECT '_rowid_',* FROM 'PLBatteryAgent_EventBackward_Battery'  ORDER BY '_rowid_' ASC;
