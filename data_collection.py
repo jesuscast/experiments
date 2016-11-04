@@ -47,9 +47,9 @@ def collectForNTime(miliseconds):
   gyroData = None
   accelData = None
   magneticData = None
-  timesP = None
-  readings = []
-  timesFinal = []
+  timesP = [0,0,0]
+  readings = [[],[],[]]
+  timesFinal = [[],[],[]]
   timeA = time.time()
   while True:
     timeB = time.time()
@@ -62,27 +62,31 @@ def collectForNTime(miliseconds):
       gyroData = CMRotationRate(gyroData)
       accelData = CMAcceleration(accelData)
       magneticData = CMMagneticField(magneticData)
-      times = [ gyroData.t, accelData.t, magneticData.t]
-      if times != timesP:
-        timesP = times
-        timesFinal.append(times)
-        readings.append(list(gyroData.p + accelData.p + magneticData.p))
-  return np.array(readings), np.array(timesFinal)
+      for sensorItem in enumerate([ gyroData, accelData, magneticData]):
+        if sensorItem.t != timesP[i]:
+          timesP[i] = sensorItem.t
+          timesFinal[i].append(sensorItem.t)
+          readings[i].append(list(sensorItem.p))
+  return readings, timesFinal
 
 def normalizeReadings(readings, timestampsTmp):
-  shape = readings.shape
+
   readingsNormalizedTmp = []
-  start = np.amax(timestampsTmp[0])
-  end = np.amin(timestampsTmp[-1])
-  newXValues = np.arange(start, end, (end - start) / float(necessary))
-  for i in range(shape[1]):
+
+  earliestTimestamp = np.amax([ n[0] for n in timestampsTmp ])
+  latestTimestamp = np.amin([ n[-1] for n in timestampsTmp ])
+
+  newXValues = np.arange(earliestTimestamp, latestTimestamp, (latestTimestamp - earliestTimestamp) / float(necessary))
+
+  for i in range(len(readings)):
     currentColumnSensor = []
     timestamps = []
-    for j in range(shape[0]):
-      timestamps.append(timestampsTmp[j][i/3])
-      currentColumnSensor.append(readings[j][i])
+    for j in range(len(readings[i])):
+      timestamps.append(timestampsTmp[i][j])
+      currentColumnSensor.append(readings[i][j])
     currentColumnInterpolated = interpolate(timestamps, currentColumnSensor, newXValues)
     readingsNormalizedTmp.append(currentColumnInterpolated)
+
   return readingsNormalizedTmp, newXValues
 
 def obtainCompressedCSV(readingsNormalized):
@@ -109,21 +113,24 @@ def toNormal(readings, timestamps):
 # readings, timestamps = collectForNTime(1)
 # readingsNormalized = [  [ normalizeReadings(readings)[j][i] for j in range(9) ] for i in range(necessary) ]
 
-print("Initial time:"+str(time.time()))
-for i in range(180):
-  fileToWrite = open('current_data.csv', 'w')
-  for j in range(20):
-    data, times = toNormal(*collectForNTime(1))
-    inCSV = obtainCompressedCSV(data)
-    fileToWrite.write(inCSV+'\n')
-  fileToWrite.write('*'*100+'\n')
-  fileToWrite.close()
-  files = { 'file': open('current_data.csv', 'rb') }
-  data = {
-    'fieldType': 'compressed',
-  }
-  r = requests.post('http://8f6eea6f.ngrok.io/csv/upload', files = files, data = data)
-  print('*'*10)
-  print(r)
-  print(i)
-  print(time.time())
+def  startColecting():
+  print("Initial time:"+str(time.time()))
+  for i in range(180):
+    fileToWrite = open('current_data.csv', 'w')
+    for j in range(20):
+      data, times = toNormal(*collectForNTime(1))
+      inCSV = obtainCompressedCSV(data)
+      fileToWrite.write(inCSV+'\n')
+    fileToWrite.write('*'*100+'\n')
+    fileToWrite.close()
+    files = { 'file': open('current_data.csv', 'rb') }
+    data = {
+      'fieldType': 'compressed',
+    }
+    r = requests.post('http://8f6eea6f.ngrok.io/csv/upload', files = files, data = data)
+    print('*'*10)
+    print(r)
+    print(i)
+    print(time.time())
+
+startColecting()
