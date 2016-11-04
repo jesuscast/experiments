@@ -9,6 +9,10 @@ from cp import als
 import requests
 
 class PointStruct:
+  """ Parser for objective c sensor struct.
+    Saves x,y,z for sensor as well as t for
+    the time
+  """
   def __init__(self, data):
     points = None
     if self.name == 'CMRotationRate':
@@ -34,16 +38,21 @@ class CMAcceleration(PointStruct):
 class CMMagneticField(PointStruct):
   name = 'CMMagneticField'
 
+# The number of readings per second.
 necessary = 50
+# the CMotionManager instance
 mgr = None
 
+# Initialize the objects.
 CMMotionManager = ObjCClass('CMMotionManager')
 mgr = CMMotionManager.alloc().init()
+# Start receiving data.
 mgr.startGyroUpdates()
 mgr.startAccelerometerUpdates()
 mgr.startMagnetometerUpdates()
 
 def collectForNTime(miliseconds):
+  """ Returns readings and timestamps for up to N miliseconds """
   gyroData = None
   accelData = None
   magneticData = None
@@ -70,7 +79,7 @@ def collectForNTime(miliseconds):
   return readings, timesFinal
 
 def normalizeReadings(readings, timestampsTmp):
-
+  """ Interpolate all of the readings in order to obtain N number of readings per second """
   readingsNormalizedTmp = []
 
   earliestTimestamp = np.amax([ n[0] for n in timestampsTmp ])+0.0001
@@ -93,6 +102,7 @@ def normalizeReadings(readings, timestampsTmp):
   return readingsNormalizedTmp, newXValues
 
 def obtainCompressedCSV(readingsNormalized):
+  """ Compresses teh sensor data """
   T_in= dtensor(readingsNormalized.reshape(necessary,3,3))
   T_out, fit, itr, _ = als(T_in, 3)
   final_Compressed = "\n".join(
@@ -104,25 +114,36 @@ def obtainCompressedCSV(readingsNormalized):
   return final_Compressed
 
 def obtainCSV(readingsNormalized):
+  """ Creates a CSV out of the normalized matrix """
   final_Uncompressed = "\n".join([  ",".join([ str(readingsNormalized[i][j]) for j in range(9) ]) for i in range(necessary) ])
   return final_Uncompressed
 
 def toNormal(readings, timestamps):
+  """ Normalize the data and puts the matrix
+    in the right format for
+   tensor compression """
   data = normalizeReadings(readings, timestamps)
   times = data[1][:necessary]
   organizedSensor = np.array([  [ data[0][j][i] for j in range(9) ] for i in range(necessary) ])
   return organizedSensor, times
 
 def  startColecting():
+  """Start collecting the data """
   print('*'*10)
   print("Initial time:"+str(time.time()))
+  timesDiff = []
+  allTimes = []
   for i in range(180):
     fileToWrite = open('current_data.csv', 'w')
+    results = []
     for j in range(20):
       data, times = toNormal(*collectForNTime(1))
+      timeInitial = time.time()
       inCSV = obtainCompressedCSV(data)
-      fileToWrite.write(inCSV+'\n')
-    fileToWrite.write('*'*100+'\n')
+      timesDiff.append(time.time() - timeInitial)
+      allTimes.append(times)
+      results.append(inCSV)
+    fileToWrite.write(("*"*100).join(results))
     fileToWrite.close()
     files = { 'file': open('current_data.csv', 'rb') }
     data = {
@@ -130,6 +151,7 @@ def  startColecting():
     }
     r = requests.post('http://192.168.1.15/csv/upload', files = files, data = data)
     print(i)
-    print('Final time: '+str(time.time()))
+  print('Final time: '+str(time.time()))
+  return timesDiff, allTimes
 
-startColecting()
+a,b = startColecting()
