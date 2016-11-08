@@ -136,16 +136,17 @@ def toNormal(readings, timestamps):
   organizedSensor = np.array([  [ data[0][j][i] for j in range(9) ] for i in range(necessary) ])
   return organizedSensor, times
 
-def  startColecting(serverIP):
+def  startColecting(serverIP, cycles, cycleLength):
   """Start collecting the data """
   print('*'*10)
-  print("Initial time:"+str(time.time()))
+  initialTime = time.time()
+  print("Initial time:"+str(initialTime))
   timesDiff = []
   allTimes = []
-  for i in range(180):
+  for i in range(cycles):
     fileToWrite = open('current_data.csv', 'w')
     results = []
-    for j in range(20):
+    for j in range(cycleLength):
       data, times = toNormal(*collectForNTime(1))
       timeInitial = time.time()
       inCSV = obtainCompressedCSV(data)
@@ -160,8 +161,8 @@ def  startColecting(serverIP):
     }
     r = requests.post('http://'+serverIP+'/csv/upload', files = files, data = data)
     print(i)
-  print('Final time: '+str(time.time()))
-  return timesDiff, allTimes
+  finalTime = time.time()
+  return timesDiff, allTimes, initialTime, finalTime
 
 # a,b = startColecting()
 # 192.168.1.15

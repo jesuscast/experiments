@@ -2,3 +2,4 @@ env/
 Archives/
 csvOld/
 csv/
+*.pyc
