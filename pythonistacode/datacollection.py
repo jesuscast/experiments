@@ -1,12 +1,21 @@
+# Modified sktensor files.
+from sktensor.akima import interpolate
+from sktensor.dtensor import dtensor
+from sktensor.ktensor import ktensor
+from sktensor.cp import als
+
+# Communication with the server.
+import requests
+
+# Numpy from pythonista
+import numpy as np
+
+# To parse objective c structures.
 from ctypes import Structure, c_double
 from objc_util import *
+
+# Util
 import time
-from akima import interpolate
-import numpy as np
-from dtensor import dtensor
-from ktensor import ktensor
-from cp import als
-import requests
 
 class PointStruct:
   """ Parser for objective c sensor struct.

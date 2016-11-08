@@ -18,7 +18,6 @@ from numpy import array, dot, zeros, ones, arange, kron
 from numpy import setdiff1d
 from abc import ABCMeta, abstractmethod
 from pyutils import is_sequence, func_attr
-#from coremod import khatrirao
 
 import sys
 import types
