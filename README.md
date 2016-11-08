@@ -2,8 +2,12 @@ npm run get-logs -- 192.168.1.153
 
 Requirements:
 
-Javascript package manager: npm > 3.5.2
-Python package: virtualenv
+Javascript:
+npm >= 3.5.2
+node >= v4.2.6
+
+Python:
+virtualenv
 
 
 References:
