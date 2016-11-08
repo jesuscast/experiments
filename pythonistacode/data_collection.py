@@ -127,7 +127,7 @@ def toNormal(readings, timestamps):
   organizedSensor = np.array([  [ data[0][j][i] for j in range(9) ] for i in range(necessary) ])
   return organizedSensor, times
 
-def  startColecting():
+def  startColecting(serverIP):
   """Start collecting the data """
   print('*'*10)
   print("Initial time:"+str(time.time()))
@@ -149,9 +149,10 @@ def  startColecting():
     data = {
       'fieldType': 'compressed',
     }
-    r = requests.post('http://192.168.1.15/csv/upload', files = files, data = data)
+    r = requests.post('http://'+serverIP+'/csv/upload', files = files, data = data)
     print(i)
   print('Final time: '+str(time.time()))
   return timesDiff, allTimes
 
-a,b = startColecting()
+# a,b = startColecting()
+# 192.168.1.15

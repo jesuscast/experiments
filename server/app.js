@@ -12,7 +12,7 @@ const port = 8080
 app.use(bodyParser.json());
 
 app.post('/csv/upload', (req, res, next) => {
-  var form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '../csv/'), keepExtensions: true});
+  var form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '../data/csv/'), keepExtensions: true});
 
   form.parse(req, (err, fields, files) => {
     if (err) {

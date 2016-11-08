@@ -1,0 +1,14 @@
+{
+  "name": "sensordata",
+  "version": "1.0.0",
+  "description": "Collects sensor data from an iPhone and uses tensor decomposition for compression",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "cd server && npm install && node app.js",
+    "get-logs": "sh ./scripts/download_current_log_batch.sh",
+    "init": "sh ./scripts/init.sh"
+  },
+  "author": "",
+  "license": "ISC"
+}
