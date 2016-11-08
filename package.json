@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "cd server && npm install && node app.js",
     "get-logs": "sh ./scripts/download_current_log_batch.sh",
-    "init": "sh ./scripts/init.sh"
+    "init": "sh ./scripts/init.sh",
+    "tar": "tar cvzf pythonistacode.tar.gz pythonistacode"
   },
   "author": "",
   "license": "ISC"

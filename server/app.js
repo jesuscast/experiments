@@ -8,12 +8,34 @@ const app = express();
 const server = http.createServer(app);
 const port = 8080
 
+function getExperimentID(req, res, next) {
+  let experimentID = '';
+  if(req.query.experimentID){
+    experimentID = req.query.experimentID;
+  } else if (req.body.experimentID) {
+    experimentID = req.body.experimentID;
+  } else {
+    return res.status(400).json({result: 'ExperimentID not valid.'});
+  }
+  if(!experimentID || experimentID == '' || isNaN(experimentID)) {
+    return res.status(400).json({result: 'ExperimentID not valid.'});
+  }
+  if (!fs.existsSync(experimentID)) {
+    return res.status(400).json({result: 'ExperimentID has to be created first. Call /experiment/create'});
+  }
+  req.experimentID = experimentID;
+  next();
+}
 
 app.use(bodyParser.json());
 
-app.post('/csv/upload', (req, res, next) => {
-  var form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '../data/csv/'), keepExtensions: true});
+app.get('/experiment/create', getExperimentID, (req, res) => {
+  fs.mkdirSync(req.experimentID);
+});
 
+
+app.post('/csv/upload', getExperimentID, (req, res, next) => {
+  var form = new formidable.IncomingForm({uploadDir: path.resolve(__dirname, '../data/csv/'+req.experimentID), keepExtensions: true});
   form.parse(req, (err, fields, files) => {
     if (err) {
       console.log(err);
